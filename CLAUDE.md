@@ -24,7 +24,8 @@ hoops/
   notify.py          ntfy - СОБСТВЕНА тема (NTFY_TOPIC), не тази на футбола; сутрин: мачовете, цена над честната, вчера
 tools/gh.py          create / secret NAME / push / pull / run / status - ключът само от .env, никога не се печата
 research/model_backtest.py   моделът назад по протокол (избор 2022/23-2023/24, чиста 2024/25 нататък)
-.github/workflows/robot.yml  на всеки час (:41): python run.py cloud, после robot.db и docs/ се комитват
+.github/workflows/robot.yml  python run.py cloud, после robot.db и docs/ се комитват; задачата next чака ~50 мин. и поръчва следващото
+                             пускане (верига, както при футбола - графикът на GitHub не тръгна 80 мин. след създаването); cron :41 е резерв
 ```
 
 ## Правила (същите като във футбола)
