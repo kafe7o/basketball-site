@@ -1,0 +1,42 @@
+name: robot
+
+on:
+  schedule:
+    - cron: "41 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: robot
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Цикълът (история, цени, запис, уреждане, сайт, известие)
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          HOOPS_CACHE: ${{ runner.temp }}/cache
+          HOOPS_LOGS: ${{ runner.temp }}/logs
+        run: python run.py cloud
+      - name: Запис в хранилището
+        if: always()
+        run: |
+          git config user.name "hoops-robot"
+          git config user.email "hoops-robot@users.noreply.github.com"
+          git add robot.db docs
+          if git diff --cached --quiet; then echo "без промени"; exit 0; fi
+          git commit -m "Обновяване $(date -u +%Y-%m-%dT%H:%M)"
+          for i in 1 2 3; do git pull --rebase -X theirs && git push && exit 0; sleep 5; done
+          exit 1

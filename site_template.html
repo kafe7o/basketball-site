@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Баскетболният робот</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root { --bg: #eef1f4; --panel: #fff; --ink: #14202e; --muted: #5b6878; --line: #dde3ea; --chip: #e9eef4; --accent: #12263f; --home: #c2410c;
+  --ok: #0f7a4a; --ok-bg: #e3f4ec; --bad: #b42318; --warn: #a15c00; --warn-bg: #fdf1df; --shadow: 0 1px 2px rgba(16, 24, 40, .06); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0f141a; --panel: #171e27; --ink: #e6ebf1; --muted: #93a1b2; --line: #263140;
+  --chip: #222c38; --accent: #d7e3f2; --home: #fb923c; --ok: #4ade80; --ok-bg: #12301f; --bad: #f87171; --warn: #fbbf24; --warn-bg: #3a2c10; --shadow: none; } }
+:root[data-theme="dark"] { --bg: #0f141a; --panel: #171e27; --ink: #e6ebf1; --muted: #93a1b2; --line: #263140; --chip: #222c38; --accent: #d7e3f2;
+  --home: #fb923c; --ok: #4ade80; --ok-bg: #12301f; --bad: #f87171; --warn: #fbbf24; --warn-bg: #3a2c10; --shadow: none; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 "IBM Plex Sans", system-ui, sans-serif; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 16px; }
+h1 { font: 700 28px/1.15 Bitter, serif; margin: 6px 0 4px; }
+h2 { font: 600 18px/1.25 Bitter, serif; margin: 22px 0 8px; }
+.lead { color: var(--muted); margin: 0 0 6px; }
+.small { font-size: 13px; } .muted { color: var(--muted); } .num { font-family: "IBM Plex Mono", monospace; }
+.tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); margin: 14px 0 12px; }
+.tabs button { background: none; border: 0; padding: 10px 12px; font: 600 14px "IBM Plex Sans", sans-serif; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+.tabs button.on { color: var(--ink); border-bottom-color: var(--home); }
+.tab { display: none; } .tab.on { display: block; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; box-shadow: var(--shadow); }
+.card .top { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.card .tm { font-family: "IBM Plex Mono", monospace; color: var(--muted); font-size: 13px; }
+.card .teams { font-weight: 600; font-size: 16px; }
+.card .lg { color: var(--muted); font-size: 12.5px; }
+.badge { display: inline-block; border-radius: 6px; padding: 1px 7px; font-size: 12px; font-weight: 600; background: var(--chip); color: var(--muted); }
+.badge.ok { background: var(--ok-bg); color: var(--ok); } .badge.warn { background: var(--warn-bg); color: var(--warn); }
+table.mk { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13.5px; }
+table.mk th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12px; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+table.mk td { padding: 5px 6px; border-bottom: 1px solid var(--line); }
+table.mk td.r, table.mk th.r { text-align: right; }
+.edge { background: var(--ok-bg); color: var(--ok); border-radius: 6px; padding: 1px 6px; font-weight: 600; }
+.note { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin: 8px 0; font-size: 14px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 8px 0; }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.tile .k { color: var(--muted); font-size: 12.5px; } .tile .v { font: 600 22px "IBM Plex Sans", sans-serif; } .tile .s { color: var(--muted); font-size: 12.5px; }
+.y { color: var(--ok); font-weight: 600; } .n { color: var(--bad); font-weight: 600; }
+.empty { color: var(--muted); padding: 14px; text-align: center; border: 1px dashed var(--line); border-radius: 12px; }
+.theme { float: right; background: var(--chip); border: 0; border-radius: 16px; padding: 6px 12px; color: var(--ink); cursor: pointer; }
+.tw { overflow-x: auto; }
+@media (max-width: 560px) { table.mk { font-size: 12.5px; } table.mk td, table.mk th { padding: 4px 3px; } table.mk .avg { display: none; } table.mk .bk { display: block; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <button class="theme" onclick="toggleTheme()">тема</button>
+  <h1>Баскетболният робот</h1>
+  <p class="lead">НБА и Евролига: шансовете на робота срещу пазара, честната цена на Pinnacle и кога някой букмейкър плаща повече. Записът е преди мача и не се променя.</p>
+  <p class="small muted" id="upd"></p>
+  <div class="tabs" id="tabs"></div>
+  <div class="tab" id="t-games"></div>
+  <div class="tab" id="t-edges"></div>
+  <div class="tab" id="t-res"></div>
+  <div class="tab" id="t-how"></div>
+</div>
+<script>
+const DATA = /*__DATA__*/null;
+const tz = "Europe/Sofia";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const pct = x => x == null ? "–" : (x * 100).toFixed(0) + "%";
+const fmtTime = iso => new Date(iso).toLocaleTimeString("bg-BG", {timeZone: tz, hour: "2-digit", minute: "2-digit"});
+const fmtDay = iso => new Date(iso).toLocaleDateString("bg-BG", {timeZone: tz, weekday: "short", day: "2-digit", month: "2-digit"});
+const BOOKS = {pinnacle: "Pinnacle", betfair_ex_eu: "Betfair", williamhill: "William Hill", unibet_eu: "Unibet", betsson: "Betsson", nordicbet: "NordicBet",
+  marathonbet: "Marathon", onexbet: "1xBet", sport888: "888sport", betclic: "Betclic", coolbet: "Coolbet", everygame: "Everygame", gtbets: "GTbets",
+  tipico_de: "Tipico", winamax_fr: "Winamax", winamax_de: "Winamax", suprabets: "Suprabets", leovegas: "LeoVegas", matchbook: "Matchbook", unibet_nl: "Unibet",
+  unibet_fr: "Unibet", unibet_se: "Unibet", betonlineag: "BetOnline", mybookieag: "MyBookie", parionssport_fr: "Parions Sport", betanysports: "BetAnySports"};
+const book = k => BOOKS[k] || k;
+const LG = k => (DATA.leagues[k] || {});
+function toggleTheme() { const r = document.documentElement; r.dataset.theme = r.dataset.theme === "dark" ? "light" : "dark"; try { localStorage.setItem("theme", r.dataset.theme); } catch (e) {} }
+try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+
+const tabs = [["t-games", "Мачове"], ["t-edges", "Цена над честната"], ["t-res", "Резултати"], ["t-how", "Как работи"]];
+function selectTab(id) { tabs.forEach(([t]) => { document.getElementById(t).classList.toggle("on", t === id); }); document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === id)); location.hash = id; }
+document.getElementById("tabs").innerHTML = tabs.map(([t, n]) => `<button data-t="${t}" onclick="selectTab('${t}')">${n}</button>`).join("");
+document.getElementById("upd").textContent = `Обновено ${new Date(DATA.generated).toLocaleString("bg-BG", {timeZone: tz, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit"})} · odds API този месец: ${DATA.credits.used} от ${DATA.credits.budget} кредита за баскетбола`;
+
+function edgeLabel(g, e) {
+  const nm = {home: g.home, away: g.away, over: "над", under: "под"}[e.side];
+  if (e.market === "h2h") return `${nm} - победа`;
+  if (e.market === "spread") return `${nm} ${e.side === "home" ? (e.line > 0 ? "+" : "") + e.line : (-e.line > 0 ? "+" : "") + (-e.line)}`;
+  return `${nm} ${e.line} точки`;
+}
+function row(label, mp, fp, pr) {
+  if (!pr) return "";
+  const minOdds = fp ? 1.03 / fp : null;                   // честната цена + 3% - под нея не си струва (сравни с Mr Bit)
+  return `<tr><td>${label}</td><td class="r">${mp == null ? "–" : pct(mp)}</td><td class="r">${fp == null ? "–" : pct(fp)}</td>
+    <td class="r num"><b>${minOdds ? minOdds.toFixed(2) : "–"}</b></td><td class="r num avg">${pr.avg.toFixed(2)}</td><td class="r num">${pr.best.toFixed(2)} <span class="muted small bk">${esc(book(pr.best_book))}</span></td></tr>`;
+}
+function gameCard(g) {
+  const m = g.model, f = g.fair || {}, p = g.prices || {}, l = LG(g.league);
+  const sp = p.spread, tt = p.total;
+  const fh = f.h2h ? f.h2h.p : [null, null], fs = f.spread ? f.spread.p : [null, null], ft = f.total ? f.total.p : [null, null];
+  const mh = m ? m.h2h : [null, null], ms = m && m.spread ? m.spread.p : [null, null], mt = m && m.total_p ? m.total_p.p : [null, null];
+  const spl = sp ? (sp.line > 0 ? "+" + sp.line : sp.line) : "";
+  const done = g.hp != null;
+  return `<div class="card"><div class="top"><span class="tm">${fmtDay(g.tip)} ${fmtTime(g.tip)}</span><span class="teams">${esc(g.home)} – ${esc(g.away)}</span>
+      <span class="lg">${l.flag || ""} ${esc(l.title || g.league)}</span>${g.locked_at ? `<span class="badge">записан ${fmtTime(g.locked_at)}</span>` : `<span class="badge">предварително</span>`}
+      ${done ? `<span class="badge ok">${g.hp}:${g.ap}</span>` : ""}</div>
+    ${m ? `<div class="small" style="margin-top:4px">Роботът: ${esc(g.home)} ${m.margin >= 0 ? "с " + m.margin.toFixed(1) + " точки повече" : "с " + (-m.margin).toFixed(1) + " точки по-малко"}, общо ~${m.total.toFixed(0)} точки${m.fatigue && (m.fatigue[0] || m.fatigue[1]) ? ` · <span class="badge warn">${m.fatigue[0] ? esc(g.home) : esc(g.away)} играе втори ден подред</span>` : ""}</div>`
+      : `<div class="small muted" style="margin-top:4px">Роботът няма оценка (непознат отбор или малко мачове) - само пазарът.</div>`}
+    <div class="tw"><table class="mk"><tr><th>Изход</th><th class="r">Роботът</th><th class="r">Честно</th><th class="r" title="честната цена + 3%">Залагай от</th><th class="r avg">Средна</th><th class="r">Най-добра</th></tr>
+      ${row(esc(g.home) + " победа", mh[0], fh[0], p.h2h && p.h2h.home)}${row(esc(g.away) + " победа", mh[1], fh[1], p.h2h && p.h2h.away)}
+      ${sp ? row(`${esc(g.home)} ${spl}`, ms[0], fs[0], sp.home) + row(`${esc(g.away)} ${sp.line > 0 ? -sp.line : "+" + (-sp.line)}`, ms[1], fs[1], sp.away) : ""}
+      ${tt ? row(`над ${tt.line}`, mt[0], ft[0], tt.over) + row(`под ${tt.line}`, mt[1], ft[1], tt.under) : ""}</table></div>
+    ${(g.edges || []).length ? `<div class="small" style="margin-top:6px">Цена над честната: ${g.edges.map(e => `<span class="edge">${esc(edgeLabel(g, e))} @${e.price.toFixed(2)} ${esc(book(e.book))} +${(e.edge * 100).toFixed(1)}%</span>`).join(" ")}</div>` : ""}</div>`;
+}
+function renderGames() {
+  const up = DATA.upcoming || [];
+  document.getElementById("t-games").innerHTML = up.length ? `<p class="small muted">Мачовете до 36 часа напред. „Роботът“ е собственият модел; „Честно“ - шансът на Pinnacle без маржа (най-точният букмейкър).
+      <b>„Залагай от“</b> = честната цена + 3%: ако Mr Bit (или друг твой букмейкър) дава поне толкова за изхода - цената е над честната; ако дава по-малко - не си струва.
+      Пазарът почти винаги е по-точен от робота - сравнението се мери в „Резултати“.</p>` + up.map(gameCard).join("")
+    : `<div class="empty">Няма мачове в следващите 36 часа (или цените още не са изтеглени).</div>`;
+}
+function renderEdges() {
+  const list = [];
+  (DATA.upcoming || []).forEach(g => (g.edges || []).forEach(e => list.push([g, e])));
+  const r = DATA.results.by_league || {};
+  const live = Object.values(r).reduce((a, v) => ({n: a.n + (v.edges || 0), h: a.h + (v.edge_hits || 0), pay: a.pay + (v.edge_return || 0) * (v.edges || 0)}), {n: 0, h: 0, pay: 0});
+  document.getElementById("t-edges").innerHTML = `<div class="note"><b>Какво е това:</b> честният шанс е на Pinnacle без маржа. Ако някой букмейкър плаща поне <b>3% повече</b> от честната цена, изходът е тук.
+      Във футбола това е единственото, което назад е на плюс във всеки период (+1.7% до +8.6% от заложеното, 2012-2026) - роботът не участва. Тук е мерено на живо от днес.
+      Букмейкърите в списъка (от odds API, Европа) може да не работят в България - сравни с колоната „Залагай от“ в „Мачове“: ако Mr Bit дава поне толкова, е същото.
+      Меките букмейкъри ограничават печелившите. Не е сигурен залог.</div>
+    <div class="tiles"><div class="tile"><div class="k">Днес и утре</div><div class="v">${list.length}</div><div class="s">изхода над честната</div></div>
+      <div class="tile"><div class="k">На живо досега</div><div class="v">${live.n ? `${live.h}/${live.n}` : "–"}</div><div class="s">${live.n ? `връщат ${(live.pay / live.n).toFixed(2)} € от 1 €` : "още няма уредени"}</div></div></div>` +
+    (list.length ? list.map(([g, e]) => `<div class="card"><div class="top"><span class="tm">${fmtDay(g.tip)} ${fmtTime(g.tip)}</span><span class="teams">${esc(g.home)} – ${esc(g.away)}</span>
+        <span class="lg">${LG(g.league).flag || ""} ${esc(LG(g.league).title || "")}</span></div>
+        <div style="margin-top:6px"><span class="edge">${esc(edgeLabel(g, e))}</span> · <b>@${e.price.toFixed(2)}</b> при ${esc(book(e.book))} · честна цена ${(1 / e.fair).toFixed(2)} · <b>+${(e.edge * 100).toFixed(1)}%</b></div></div>`).join("")
+      : `<div class="empty">Сега няма изход с цена поне 3% над честната.</div>`);
+}
+function renderResults() {
+  const R = DATA.results, bl = R.by_league || {};
+  const rows = Object.entries(bl).map(([k, v]) => `<tr><td>${LG(k).flag || ""} ${esc(LG(k).title || k)}</td><td class="r">${v.n}</td>
+      <td class="r">${v.brier_model == null ? "–" : v.brier_model.toFixed(3)}</td><td class="r">${v.brier_market == null ? "–" : v.brier_market.toFixed(3)}</td>
+      <td class="r">${v.edges ? `${v.edge_hits}/${v.edges}` : "–"}</td><td class="r">${v.edge_return == null ? "–" : v.edge_return.toFixed(2) + " €"}</td></tr>`).join("");
+  const bt = DATA.backtest;
+  document.getElementById("t-res").innerHTML = `<h2>На живо (записът преди мача)</h2>` + (R.settled ? `<table class="mk"><tr><th>Първенство</th><th class="r">Мачове</th><th class="r">Грешка робот</th><th class="r">Грешка пазар</th><th class="r">Цена над честната</th><th class="r">Връща от 1 €</th></tr>${rows}</table>
+      <p class="small muted">„Грешка“ = Brier за победителя (по-малко е по-добре). Малка извадка - не прави изводи преди поне 200 мача.</p>` : `<div class="empty">Още няма уредени мачове - записът е от 14.10.2026.</div>`)
+    + (bt ? `<h2>Назад (проверка по протокол)</h2><div class="note">${bt.summary_html || ""}</div>` : "")
+    + ((R.recent || []).length ? `<h2>Последни мачове</h2>` + R.recent.map(g => `<div class="card"><div class="top"><span class="tm">${fmtDay(g.tip)}</span><span class="teams">${esc(g.home)} ${g.hp}:${g.ap} ${esc(g.away)}</span>
+        <span class="lg">${LG(g.league).flag || ""} ${esc(LG(g.league).title || "")}</span></div>
+        <div class="small muted">Победа на домакина: роботът ${g.model ? pct(g.model.h2h[0]) : "–"}, пазарът ${g.fair && g.fair.h2h ? pct(g.fair.h2h.p[0]) : "–"} · излезе ${g.hp > g.ap ? "домакинът" : "гостът"}</div></div>`).join("") : "");
+}
+function renderHow() {
+  const h = DATA.history || {};
+  document.getElementById("t-how").innerHTML = `<div class="note"><b>Какво прави роботът.</b> За всеки мач в НБА и Евролигата: рейтинг за атака и защита на всеки отбор (от резултатите, по-новите мачове тежат повече),
+      предимство на домакина и умора при втори мач в два поредни дни. От тях - очаквана разлика и общ брой точки, и шансове за победа, хендикап и над/под.</div>
+    <div class="note"><b>Честно:</b> пазарът (особено Pinnacle) е по-точен от робота - това се мери, не се предполага. Печалба може да дойде само от по-добра цена: затова е табът „Цена над честната“.
+      Записът е преди мача и не се променя. Без размер на залога, без „сигурен залог“.</div>
+    <div class="note"><b>Данни:</b> резултати - ESPN (НБА) и официалният сайт на Евролигата; цени - the-odds-api (регион eu, с Pinnacle); историята в базата:
+      ${Object.entries(h).map(([k, v]) => `${esc(LG(k).title || k)} ${v.n} мача от ${fmtDay(v.first)}`).join("; ")}.</div>`;
+}
+renderGames(); renderEdges(); renderResults(); renderHow();
+const start = (location.hash || "").slice(1);
+selectTab(tabs.some(t => t[0] === start) ? start : "t-games");
+</script>
+</body>
+</html>
